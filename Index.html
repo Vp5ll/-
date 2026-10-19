@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forza Physics Gear & Speed Calculator</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --accent-color: #00d2d3;
+            --accent-hover: #01a3a4;
+            --text-color: #c9d1d9;
+            --border-color: #30363d;
+            --highlight: #238636;
+            --result-color: #58a6ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .section-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #8b949e;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .car-specs-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tire-select-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .reverse-box {
+            background: rgba(0, 210, 211, 0.05);
+            border: 1px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .final-drive-badge {
+            background: var(--highlight);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .gears-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .gear-card {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .gear-card label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: var(--accent-color);
+        }
+
+        .result-text {
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--result-color);
+            background: rgba(88, 166, 255, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #8b949e;
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>حاسبة وزنيات القير والفيزياء لفورزا (4, 5, 6)</h1>
+
+        <!-- اختيار عدد النمر (من 4 إلى 10) -->
+        <div class="section-group">
+            <label for="gearCount">اختر عدد النمر:</label>
+            <select id="gearCount" onchange="generateGearInputs()">
+                <option value="4">4 نمر</option>
+                <option value="5">5 نمر</option>
+                <option value="6" selected>6 نمر</option>
+                <option value="7">7 نمر</option>
+                <option value="8">8 نمر</option>
+                <option value="9">9 نمر</option>
+                <option value="10">10 نمر</option>
+            </select>
+        </div>
+
+        <!-- معطيات السيارة وحساب الكفرات والـ RPM القابل للكتابة والاختيار -->
+        <div class="car-specs-box">
+            <h3 style="margin-top: 0; color: var(--accent-color);">1. مواصفات السيارة واختيار الكفر والـ RPM:</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="maxRpm">أقصى RPM للمحرك (اختر أو اكتب الرقم بدقة):</label>
+                <input list="rpmOptions" id="maxRpm" value="8500" placeholder="اكتب أو اختر الـ RPM" oninput="calculateAll()">
+                <datalist id="rpmOptions">
+                    <!-- سيتم تعبئة القائمة بالخيارات من 6000 إلى 12000 تلقائياً -->
+                </datalist>
+            </div>
+
+            <label>مقاس الكفر الخلفي (العرض / الدعسة / الجنط):</label>
+            <div class="tire-select-grid">
+                <div>
+                    <select id="tireWidth" onchange="calculateAll()"></select>
+                </div>
+                <div>
+                    <select id="tireAspect" onchange="calculateAll()"></select>
+                </div>
+                <div>
+                    <select id="tireRim" onchange="calculateAll()"></select>
+                </div>
+            </div>
+            <div id="tireDiameterCalculated" style="font-size: 13px; color: var(--result-color); margin-top: 8px;">
+                قطر الكفر المحسوب: -
+            </div>
+        </div>
+
+        <!-- قسم سرعة الريوس لاستخراج الفاينل درايف -->
+        <div class="reverse-box">
+            <label for="revSpeed" style="font-size: 16px; color: var(--accent-color);">2. أدخل سرعة الريوس بالسيارة (كم/س):</label>
+            <input type="number" id="revSpeed" placeholder="أدخل سرعة الريوس (مثال: 95)" oninput="calculateAll()">
+
+            <div class="final-drive-badge" id="finalDriveDisplay">
+                الفاينل درايف المستخرج (Final Drive): -
+            </div>
+        </div>
+
+        <!-- أدخال السرعات لكل نمرة -->
+        <h3 style="color: var(--accent-color);">3. أدخل السرعة القصوى لـ كل نمرة (كم/س):</h3>
+        <div id="gearsContainer" class="gears-grid">
+            <!-- يتم توليد خانات السرعة ديناميكياً -->
+        </div>
+
+        <div class="footer">
+            تصميم حازم العتيبي
+        </div>
+    </div>
+
+    <script>
+        let calculatedFinalDrive = 0;
+
+        // تعبئة خيارات الـ RPM ومقاسات الكفرات
+        function populateOptions() {
+            // تعبئة قائمة الـ RPM التفاعلية (من 6000 إلى 12000 بزيادة 100)
+            const rpmDatalist = document.getElementById('rpmOptions');
+            for (let rpm = 6000; rpm <= 12000; rpm += 100) {
+                let opt = document.createElement('option');
+                opt.value = rpm;
+                rpmDatalist.appendChild(opt);
+            }
+
+            // تعبئة مقاسات الكفرات
+            const widthSelect = document.getElementById('tireWidth');
+            const aspectSelect = document.getElementById('tireAspect');
+            const rimSelect = document.getElementById('tireRim');
+
+            // العرض (من 175 إلى 355)
+            for (let w = 175; w <= 355; w += 10) {
+                let opt = document.createElement('option');
+                opt.value = w;
+                opt.innerText = w;
+                if (w === 245) opt.selected = true;
+                widthSelect.appendChild(opt);
+            }
+
+            // الدعسة/الارتفاع (من 20 إلى 75)
+            for (let a = 20; a <= 75; a += 5) {
+                let opt = document.createElement('option');
+                opt.value = a;
+                opt.innerText = a;
+                if (a === 40) opt.selected = true;
+                aspectSelect.appendChild(opt);
+            }
+
+            // مقاس الجنط (من 13 إلى 24 بوصة)
+            for (let r = 13; r <= 24; r++) {
+                let opt = document.createElement('option');
+                opt.value = r;
+                opt.innerText = "R" + r;
+                if (r === 18) opt.selected = true;
+                rimSelect.appendChild(opt);
+            }
+        }
+
+        // حساب قطر الكفر بالمتر تلقائياً
+        function getCalculatedTireDiameter() {
+            const w = parseFloat(document.getElementById('tireWidth').value);
+            const a = parseFloat(document.getElementById('tireAspect').value);
+            const r = parseFloat(document.getElementById('tireRim').value);
+
+            if (!w || !a || !r) return 0.65;
+
+            const sidewallMm = w * (a / 100);
+            const rimMm = r * 25.4;
+            const totalDiameterMm = (sidewallMm * 2) + rimMm;
+
+            return totalDiameterMm / 1000;
+        }
+
+        function generateGearInputs() {
+            const count = parseInt(document.getElementById('gearCount').value);
+            const container = document.getElementById('gearsContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= count; i++) {
+                const card = document.createElement('div');
+                card.className = 'gear-card';
+
+                card.innerHTML = `
+                    <label>الترس ${i} (Gear ${i})</label>
+                    <input type="number" id="gear${i}_speed" placeholder="السرعة (كم/س)" oninput="calculateAll()">
+                    <div class="result-text" id="gear${i}_ratio">نسبة القير (Ratio): -</div>
+                `;
+                container.appendChild(card);
+            }
+            calculateAll();
+        }
+
+        function calculateAll() {
+            const rpm = parseFloat(document.getElementById('maxRpm').value) || 8500;
+            const tireDiam = getCalculatedTireDiameter();
+            const revSpeed = parseFloat(document.getElementById('revSpeed').value);
+            const finalDriveDisplay = document.getElementById('finalDriveDisplay');
+            const tireDisplay = document.getElementById('tireDiameterCalculated');
+
+            if (tireDisplay) {
+                tireDisplay.innerText = `قطر الكفر المحسوب تلقائياً: ${tireDiam.toFixed(3)} متر`;
+            }
+
+            const carPhysicsConstant = rpm * tireDiam * 0.1885;
+
+            if (!revSpeed || revSpeed <= 0) {
+                finalDriveDisplay.innerText = "الفاينل درايف المستخرج (Final Drive): - (أدخل سرعة الريوس أولاً)";
+                calculatedFinalDrive = 0;
+                resetGearOutputs();
+                return;
+            }
+
+            const defaultReverseRatio = 3.10;
+            calculatedFinalDrive = carPhysicsConstant / (revSpeed * defaultReverseRatio);
+
+            finalDriveDisplay.innerText = `الفاينل درايف المستخرج (Final Drive): ${calculatedFinalDrive.toFixed(2)}`;
+
+            const count = parseInt(document.getElementById('gearCount').value);
+
+            for (let i = 1; i <= count; i++) {
+                const speedInput = document.getElementById(`gear${i}_speed`);
+                const ratioOutput = document.getElementById(`gear${i}_ratio`);
+
+                if (speedInput && ratioOutput) {
+                    const gearSpeed = parseFloat(speedInput.value);
+
+                    if (gearSpeed && gearSpeed > 0 && calculatedFinalDrive > 0) {
+                        let gearRatio = carPhysicsConstant / (gearSpeed * calculatedFinalDrive);
+                        ratioOutput.innerText = `نسبة القير (Ratio): ${gearRatio.toFixed(2)}`;
+                    } else {
+                        ratioOutput.innerText = "نسبة القير (Ratio): -";
+                    }
+                }
+            }
+        }
+
+        function resetGearOutputs() {
+            const count = parseInt(document.getElementById('gearCount').value);
+            for (let i = 1; i <= count; i++) {
+                const ratioOutput = document.getElementById(`gear${i}_ratio`);
+                if (ratioOutput) ratioOutput.innerText = "نسبة القير (Ratio): -";
+            }
+        }
+
+        window.onload = function() {
+            populateOptions();
+            generateGearInputs();
+        };
+    </script>
+
+</body>
+</html>
